@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IFRS 9 ECL Top-Down Multiyear Backtest — A3 overview</title>
+<style>
+  @page { size: A3 landscape; margin: 0; }
+  :root{
+    --ink:#1b1f24; --muted:#5b6470; --rule:#cfd4da; --soft:#eef2f7; --accent:#1f4e79; --accent2:#2a78d6;
+    --s1:#1baf7a; --s2:#eda100; --s3:#e34948; --wo:#5b6470;
+    --sans:"Segoe UI","Helvetica Neue",Arial,sans-serif; --serif:Georgia,"Times New Roman",serif; --mono:Consolas,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#dfe3e8;color:var(--ink);font-family:var(--sans);font-size:7.6pt;line-height:1.27}
+  .sheet{width:420mm;height:297mm;background:#fff;margin:8mm auto;padding:5mm 9mm 2.5mm;display:grid;
+         grid-template-rows:auto auto auto auto auto auto;gap:1.4mm;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.18)}
+  @media print{ html,body{background:#fff} .sheet{margin:0;box-shadow:none} }
+
+  header{border-bottom:2pt solid var(--accent);padding-bottom:1.2mm}
+  header h1{margin:0;font-size:17pt;color:var(--accent);line-height:1.1;display:inline}
+  header .sub{font-size:8.2pt;color:var(--muted);margin-left:4mm}
+  .idea{background:var(--soft);border-left:3pt solid var(--accent2);padding:1.2mm 3mm;border-radius:2pt;font-size:8pt;line-height:1.27}
+  .idea b{color:var(--accent)}
+
+  .row1{display:grid;grid-template-columns:146mm 108mm 1fr;gap:3mm;min-height:0}
+  section{min-height:0}
+  h2{font-size:9.4pt;color:var(--accent);margin:0 0 1.1mm;padding-bottom:.5mm;border-bottom:1pt solid var(--rule)}
+  h2 .n{display:inline-block;background:var(--accent);color:#fff;border-radius:2pt;padding:0 1.5mm;margin-right:1.5mm;font-family:var(--mono);font-size:7.4pt;line-height:4.1mm;vertical-align:1px}
+  h3{font-size:8pt;margin:1.4mm 0 .7mm}
+  p{margin:0 0 .9mm}
+  var{font-style:italic}
+  .formula{font-family:var(--serif);font-size:8.1pt;background:#fafbfc;border:1pt solid var(--rule);border-radius:2pt;padding:1mm 1.8mm;margin:.8mm 0}
+  .formula sub,.formula sup{font-size:5.8pt}
+  .formula .lab{font-family:var(--sans);font-size:6.4pt;color:var(--muted);display:block;margin-bottom:.3mm;text-transform:uppercase;letter-spacing:.05em}
+  .formula .lab b{color:var(--accent);text-transform:none;font-size:7.4pt;letter-spacing:0}
+  .small{font-size:6.7pt;color:var(--muted)}
+  code{font-family:var(--mono);font-size:6.9pt;background:#f3f5f7;padding:0 .8mm;border-radius:2pt}
+  ul.q{margin:1mm 0 0;padding-left:3.8mm} ul.q li{margin:0 0 .4mm;font-size:7pt;line-height:1.2} ul.q b{color:var(--accent)}
+  .charts{display:grid;grid-template-columns:60% 1fr;gap:2.5mm;align-items:start}
+  .ct{font-size:7.2pt;font-weight:700;color:var(--accent);margin:.3mm 0 .2mm}
+  .ct span{font-weight:400;color:var(--muted)}
+  .abc{display:grid;grid-template-columns:1fr 36mm;gap:2.5mm;align-items:start;margin-top:.4mm}
+
+  dl.defs{margin:0;columns:4;column-gap:5mm;font-size:6.6pt;line-height:1.2}
+  dl.defs div{break-inside:avoid;margin-bottom:.8mm}
+  dl.defs dt{font-weight:700;display:inline} dl.defs dt::after{content:" — "}
+  dl.defs dd{margin:0;display:inline;color:#2b3137}
+
+  ol.steps{list-style:none;padding:0;margin:0;counter-reset:s}
+  ol.steps li{position:relative;padding:.4mm 0 .4mm 6.4mm;border-bottom:.6pt solid #e6e9ee;counter-increment:s}
+  ol.steps li::before{content:counter(s);position:absolute;left:0;top:1mm;width:5.4mm;height:5.4mm;border-radius:50%;background:var(--accent2);color:#fff;font-weight:700;font-size:7.4pt;display:flex;align-items:center;justify-content:center}
+  ol.steps b.t{display:block;font-size:7.3pt}
+  ol.steps .do{font-size:6.7pt;color:#2b3137;line-height:1.19}
+  ol.steps .do span{color:var(--accent);font-weight:700;text-transform:uppercase;font-size:6.2pt;letter-spacing:.05em;margin-right:.6mm}
+
+  table{border-collapse:collapse;width:100%;font-size:7pt}
+  th,td{border:.7pt solid var(--rule);padding:.7mm 1.1mm;text-align:left;vertical-align:top}
+  th{background:var(--soft);font-weight:700}
+  td.num,th.num{text-align:right;font-family:var(--mono);white-space:nowrap}
+  .pill{display:inline-block;border-radius:3pt;padding:0 1.3mm;font-weight:700;font-size:6.8pt;color:#fff;line-height:3.4mm}
+  .p1{background:var(--s1)} .p2{background:var(--s2);color:#1b1f24} .p3{background:var(--s3)}
+  .rule{border:1pt solid var(--rule);border-radius:2pt;padding:.8mm 1.8mm;margin-top:.8mm;font-size:6.8pt;line-height:1.22;background:#fafbfc}
+  .rule b.h{display:block;color:var(--accent);font-size:7.5pt;margin-bottom:.4mm}
+  .rule.wo{border-color:var(--s3);background:#fff6f5} .rule.wo b.h{color:#9a1f18}
+  .rule ul{margin:0;padding-left:3.6mm} .rule li{margin:0 0 .4mm}
+
+  table.mx{font-size:6.6pt;line-height:1.18} table.mx th.corner{width:42mm;background:#e4e9f0}
+  table.mx th.col .f{display:block;font-weight:400;font-size:6.6pt;margin-top:.2mm;color:var(--muted)}
+  table.mx td.rowh{background:var(--soft);font-weight:700}
+  table.mx td.rowh .f{display:block;font-weight:400;font-size:6.6pt;margin-top:.3mm}
+  table.mx td .el{display:block;color:#1f4e79}
+  table.mx td .rl{display:block;color:#9a1f18}
+  table.mx td .at{display:block;color:var(--muted);font-size:6.2pt;margin-top:.1mm}
+  table.mx td.na{color:#9aa1a8;text-align:center;background:#f6f7f8}
+  .cover{border:1pt solid var(--accent2);background:var(--soft);border-radius:2pt;padding:.9mm 2mm;margin-top:.9mm;font-size:6.8pt;line-height:1.22}
+  .cover b{color:var(--accent)}
+
+  .row3{display:grid;grid-template-columns:136mm 1fr;gap:4mm;min-height:0;align-items:start}
+  .row3 h2{margin-bottom:0}
+  table.tt td,table.tt th{padding:.6mm .8mm;text-align:center;font-family:var(--mono);font-size:6.8pt}
+  table.tt .gap{border:0;background:#fff;width:3mm}
+  table.tt th:first-child,table.tt td:first-child,table.tt th:nth-child(8),table.tt td:nth-child(8){font-family:var(--sans);text-align:left}
+  table.tt td.na{background:#f6f7f8;color:#9aa1a8}
+  table.tt td.hi{background:#fae0de;color:#9a1f18;font-weight:700}
+  table.tt td.lo{background:#e8eef5;color:#1f4e79;font-weight:700}
+  table.tt td.ok{background:#e3f1e4;color:#1f6f22}
+  .credit{font-size:6.4pt;color:var(--muted);margin-top:1mm}
+  svg text{font-family:var(--sans)}
+</style>
+</head>
+<body>
+<div class="sheet">
+
+<!-- ================= HEADER ================= -->
+<header>
+  <h1>Top-Down Multiyear Backtest of IFRS 9 ECL</h1><span class="sub">Residential mortgages · the ECL booked at a reporting date vs. the loss later realised on the same loans · ECL level only, no component analysis</span>
+</header>
+<div class="idea"><b>Main idea.</b> At a reporting date <var>t₀</var> the bank booked an ECL for every loan — a forecast of what those loans will lose, in today's money. The backtest keeps exactly those loans, waits <var>h</var> = 1 … 5 years, measures what they actually lost, discounts it back to <var>t₀</var> the same way and compares the two sums. One cohort answers <b>① adequacy</b> (was the provision enough?), five cohorts answer <b>② bias</b> (wrong in the same direction every time?), a paired t-test answers <b>③ fit</b> (is the gap more than noise?). Loans still on book at <var>t<sub>h</sub></var> are either left out on both sides (<b>truncation test</b>) or carried at the ECL they hold at <var>t<sub>h</sub></var> (<b>roll-forward test</b>) — panel A shows both.</div>
+
+<!-- ================= ROW 1 ================= -->
+<div class="row1">
+
+<!-- A -->
+<section>
+  <h2><span class="n">A</span>The comparison — and the two ways to treat loans still on book</h2>
+  <div class="charts">
+    <div>
+      <div class="ct">Truncation test <span>— RL(h) vs EL(h); survivors left out on both sides</span></div>
+      <svg viewBox="0 6 200 102" style="display:block;width:100%;height:auto;aspect-ratio:200/102" xmlns="http://www.w3.org/2000/svg" aria-label="truncation test">
+        <defs><marker id="ar" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 z" fill="#5b6470"/></marker></defs>
+        <line x1="22" y1="98" x2="194" y2="98" stroke="#c3c2b7" stroke-width="1" marker-end="url(#ar)"/>
+        <line x1="22" y1="98" x2="22" y2="30" stroke="#c3c2b7" stroke-width="1" marker-end="url(#ar)"/>
+        <g font-size="5.8" text-anchor="middle" fill="#5b6470">
+          <text x="22" y="107" font-weight="700" fill="#1f4e79">t₀</text><text x="54" y="107">h=1</text><text x="86" y="107">h=2</text><text x="118" y="107">h=3</text><text x="150" y="107">h=4</text><text x="182" y="107">h=5</text>
+        </g>
+        <text x="26" y="39.5" font-size="5.2" fill="#5b6470">€, PV at t₀, cumulative</text>
+        <polygon points="22,98 54,75 86,60.2 118,47.2 150,40.8 182,37.8 182,79 150,80 118,81.4 86,83.4 54,86.8" fill="#dfe8f3"/>
+        <path d="M22,98 L54,75 L86,60.2 L118,47.2 L150,40.8 L182,37.8" stroke="#8fb0d8" stroke-width=".9" stroke-dasharray="3 2" fill="none"/>
+        <path d="M22,98 L54,86.8 L86,83.4 L118,81.4 L150,80 L182,79" stroke="#8fb0d8" stroke-width=".9" stroke-dasharray="3 2" fill="none"/>
+        <path d="M22,98 L54,81.4 L86,73.8 L118,67.4 L150,64 L182,62.2" stroke="#2a78d6" stroke-width="1.8" fill="none"/>
+        <g fill="#2a78d6"><circle cx="54" cy="81.4" r="2"/><circle cx="86" cy="73.8" r="2"/><circle cx="118" cy="67.4" r="2"/><circle cx="150" cy="64" r="2"/><circle cx="182" cy="62.2" r="2"/></g>
+        <path d="M22,98 L54,71.2 L86,51.6 L118,40.8 L150,35.8 L182,33.8" stroke="#e34948" stroke-width="1.8" fill="none"/>
+        <g fill="#e34948"><circle cx="54" cy="71.2" r="2"/><circle cx="86" cy="51.6" r="2"/><circle cx="118" cy="40.8" r="2"/><circle cx="150" cy="35.8" r="2"/><circle cx="182" cy="33.8" r="2"/></g>
+        <line x1="24" y1="10.5" x2="32" y2="10.5" stroke="#e34948" stroke-width="1.8"/><text x="35" y="12.7" font-size="5.8" font-weight="700" fill="#9a1f18">RL(h): realised losses with default year ≤ h</text>
+        <line x1="24" y1="18.5" x2="32" y2="18.5" stroke="#2a78d6" stroke-width="1.8"/><text x="35" y="20.7" font-size="5.8" font-weight="700" fill="#1f4e79">EL(h): expected m₁ … m_h, booked scenario weights</text>
+        <rect x="24" y="24" width="8" height="5" fill="#dfe8f3"/><text x="35" y="28.7" font-size="5.8" fill="#1f4e79">band between the upside and the downside ECL</text>
+        <circle cx="118" cy="40.8" r="5.5" fill="#fff" stroke="#9a1f18" stroke-width="1.1"/><text x="118" y="43.3" font-size="6.4" font-weight="700" fill="#9a1f18" text-anchor="middle">1</text>
+        <line x1="127" y1="40.8" x2="127" y2="67.4" stroke="#0b0b0b" stroke-width=".9" stroke-dasharray="2 2"/>
+        <circle cx="127" cy="54" r="5.5" fill="#fff" stroke="#0b0b0b" stroke-width="1.1"/><text x="127" y="56.5" font-size="6.4" font-weight="700" text-anchor="middle">3</text>
+        <text x="135" y="52" font-size="5.6" stroke="#fff" stroke-width="2.5" paint-order="stroke">gap G(3) = RL − EL</text>
+        <text x="135" y="59" font-size="5.6" stroke="#fff" stroke-width="2.5" paint-order="stroke">t = G ÷ its SE</text>
+        <text x="60" y="94" font-size="5.4" fill="#5b6470">stress year: RL leaves the band</text>
+      </svg>
+    </div>
+    <div>
+      <div class="ct">Roll-forward test <span>— survivors carry ECL(t<sub>h</sub>)</span></div>
+      <svg viewBox="0 6 145 102" style="display:block;width:100%;height:auto;aspect-ratio:145/102" xmlns="http://www.w3.org/2000/svg" aria-label="roll-forward test">
+        <line x1="16" y1="98" x2="142" y2="98" stroke="#c3c2b7" stroke-width="1"/>
+        <line x1="16" y1="98" x2="16" y2="30" stroke="#c3c2b7" stroke-width="1"/>
+        <g font-size="5.8" text-anchor="middle" fill="#5b6470"><text x="34" y="107">h=1</text><text x="58" y="107">h=2</text><text x="82" y="107">h=3</text><text x="106" y="107">h=4</text><text x="130" y="107">h=5</text></g>
+        <g fill="#e34948"><rect x="26" y="77.9" width="16" height="20.1"/><rect x="50" y="63.2" width="16" height="34.8"/><rect x="74" y="55.1" width="16" height="42.9"/><rect x="98" y="51.3" width="16" height="46.7"/><rect x="122" y="49.8" width="16" height="48.2"/></g>
+        <g fill="#9ec5f4"><rect x="26" y="61.5" width="16" height="16.4"/><rect x="50" y="33.9" width="16" height="29.3"/><rect x="74" y="42.1" width="16" height="13"/><rect x="98" y="44.1" width="16" height="7.2"/><rect x="122" y="45.3" width="16" height="4.5"/></g>
+        <g font-size="5.4" font-weight="700" text-anchor="middle" fill="#1b1f24"><text x="58" y="31">2.13</text><text x="82" y="39">1.86</text><text x="106" y="41">1.79</text><text x="130" y="42.3">1.75</text></g>
+        <line x1="16" y1="68" x2="142" y2="68" stroke="#1f4e79" stroke-width="1.4" stroke-dasharray="4 2"/>
+        <text x="19" y="64.5" font-size="5.6" font-weight="700" fill="#1f4e79" stroke="#fff" stroke-width="2.5" paint-order="stroke">lifetime ECL(t₀)</text>
+        <text x="34" y="58.5" font-size="5.4" font-weight="700" text-anchor="middle" fill="#1b1f24" stroke="#fff" stroke-width="2" paint-order="stroke">1.22</text>
+        <rect x="18" y="6" width="7" height="5" fill="#e34948"/><text x="28" y="10.6" font-size="5.6" fill="#1b1f24">RL(h) — realised, as left</text>
+        <rect x="18" y="14" width="7" height="5" fill="#9ec5f4"/><text x="28" y="18.6" font-size="5.6" fill="#1b1f24">+ PV of ECL held on survivors at t_h</text>
+        <text x="18" y="26.5" font-size="5.4" fill="#5b6470">number = bar ÷ dashed line (roll-forward ratio)</text>
+      </svg>
+    </div>
+  </div>
+  <div class="formula" style="margin-top:.6mm"><span class="lab">The two tests, defined</span><b style="font-family:var(--sans);font-size:7.2pt;color:var(--accent)">Truncation (step 5):</b> <var>RL</var>(<var>h</var>) ⋚ <var>EL</var>(<var>h</var>) = Σ<sub>i</sub> Σ<sub>k≤h</sub> <var>m<sub>i,k</sub></var>&nbsp; <span class="small">— both sides stop at year <var>h</var>: a survivor adds 0 to RL and only <var>m₁…m<sub>h</sub></var> to EL. Tests the first <var>h</var> years of the term structure, nothing beyond.</span><br><b style="font-family:var(--sans);font-size:7.2pt;color:var(--accent)">Roll-forward (step 6):</b> Σ<sub>i</sub> Σ<sub>k</sub> <var>m<sub>i,k</sub></var> ⋚ <var>RL</var>(<var>h</var>) + Σ<sub>survivors</sub> (1+<var>r<sub>i</sub></var>)<sup>−h</sup>·<var>ECL<sub>i</sub></var>(<var>t<sub>h</sub></var>)&nbsp; <span class="small">— lifetime ECL at <var>t₀</var> against realised loss plus the <em>shadow</em> lifetime ECL each survivor holds at <var>t<sub>h</sub></var> (best estimate of what is still to come). Tests the whole provision at every <var>h</var>; but the right side is the engine's own view — an optimistic engine passes its own roll-forward (h = 1 above) — so read it next to the truncation ratio, never alone.</span></div>
+  <div class="abc">
+    <ul class="q" style="margin-top:0">
+      <li><b>① Adequacy — was the provision enough?</b> One cohort, one horizon: RL(<var>h</var>) against EL(<var>h</var>). The band is the bank's own plausible range at <var>t₀</var> (upside-scenario ECL … downside-scenario ECL). Inside = adequate; above = worse than the stress case = under-provision (amber, red beyond 125 % of the downside); below = over-provision.</li>
+      <li><b>② Bias — wrong in the same direction every time?</b> One cohort sees one economy; one result can be luck. The 15 ratios ρ = RL/EL of all cohorts form the triangle. One red diagonal = one bad year. Red along rows, down columns and on both sides of it = bias (ECL systematically too low; blue = too high).</li>
+      <li><b>③ Fit — is the gap more than noise?</b> G = RL − EL is a sum of loan-level differences; ÷ its standard error = the paired <var>t</var> (panel E). Valid against the hindsight ECL only; |<var>t</var>| &gt; 2 = mis-fit beyond chance even knowing the economy.</li>
+    </ul>
+    <svg viewBox="0 0 112 104" style="display:block;width:100%;height:auto;aspect-ratio:112/104" xmlns="http://www.w3.org/2000/svg" aria-label="triangle">
+      <circle cx="7" cy="7" r="5.5" fill="#fff" stroke="#1f4e79" stroke-width="1.1"/><text x="7" y="9.5" font-size="6.4" font-weight="700" fill="#1f4e79" text-anchor="middle">2</text><text x="15" y="9.5" font-size="6.2" font-weight="700" fill="#1f4e79">every t₀ → the triangle</text>
+      <g font-size="5.4" fill="#5b6470" text-anchor="middle"><text x="31" y="21">h1</text><text x="46" y="21">h2</text><text x="61" y="21">h3</text><text x="76" y="21">h4</text><text x="91" y="21">h5</text></g>
+      <g font-size="5.4" fill="#5b6470" text-anchor="end"><text x="22" y="34">2021</text><text x="22" y="48">2022</text><text x="22" y="62">2023</text><text x="22" y="76">2024</text><text x="22" y="90">2025</text></g>
+      <g stroke="#fff" stroke-width="1">
+        <rect x="24" y="25" width="14" height="12" fill="#f2a9a6"/><rect x="39" y="25" width="14" height="12" fill="#e34948"/><rect x="54" y="25" width="14" height="12" fill="#e34948"/><rect x="69" y="25" width="14" height="12" fill="#e34948"/><rect x="84" y="25" width="14" height="12" fill="#e34948"/>
+        <rect x="24" y="39" width="14" height="12" fill="#e34948"/><rect x="39" y="39" width="14" height="12" fill="#e34948"/><rect x="54" y="39" width="14" height="12" fill="#e34948"/><rect x="69" y="39" width="14" height="12" fill="#e34948"/><rect x="84" y="39" width="14" height="12" fill="#f1f2f4"/>
+        <rect x="24" y="53" width="14" height="12" fill="#86b6ef"/><rect x="39" y="53" width="14" height="12" fill="#86b6ef"/><rect x="54" y="53" width="14" height="12" fill="#86b6ef"/><rect x="69" y="53" width="14" height="12" fill="#f1f2f4"/><rect x="84" y="53" width="14" height="12" fill="#f1f2f4"/>
+        <rect x="24" y="67" width="14" height="12" fill="#86b6ef"/><rect x="39" y="67" width="14" height="12" fill="#86b6ef"/><rect x="54" y="67" width="14" height="12" fill="#f1f2f4"/><rect x="69" y="67" width="14" height="12" fill="#f1f2f4"/><rect x="84" y="67" width="14" height="12" fill="#f1f2f4"/>
+        <rect x="24" y="81" width="14" height="12" fill="#86b6ef"/><rect x="39" y="81" width="14" height="12" fill="#f1f2f4"/><rect x="54" y="81" width="14" height="12" fill="#f1f2f4"/><rect x="69" y="81" width="14" height="12" fill="#f1f2f4"/><rect x="84" y="81" width="14" height="12" fill="#f1f2f4"/>
+      </g>
+      <g font-size="6" font-weight="700" text-anchor="middle" fill="#fff"><text x="31" y="34">+</text><text x="46" y="34">+</text><text x="61" y="34">+</text><text x="76" y="34">+</text><text x="91" y="34">+</text><text x="31" y="48">+</text><text x="46" y="48">+</text><text x="61" y="48">+</text><text x="76" y="48">+</text><text x="31" y="62">−</text><text x="46" y="62">−</text><text x="61" y="62">−</text><text x="31" y="76">−</text><text x="46" y="76">−</text><text x="31" y="90">−</text></g>
+      <text x="2" y="101" font-size="5" fill="#2b3137">cell = ρ(h) · red &gt; 1 · blue &lt; 1 · grey = not yet</text>
+    </svg>
+  </div>
+  <div class="small" style="margin-top:.3mm"><b>Symbols.</b> <var>i</var> = a loan · <var>m<sub>i,k</sub></var> = expected loss of loan <var>i</var> for development year <var>k</var>, exactly as the ECL engine computed it at <var>t₀</var> (<var>m<sub>i,1</sub></var> = its 12-month ECL, Σ<sub>k</sub> <var>m<sub>i,k</sub></var> = its lifetime ECL) · RL(<var>h</var>) = Σ<sub>i: τ<sub>i</sub>≤h</sub> (1+<var>r<sub>i</sub></var>)<sup>−τ<sub>i</sub></sup>·EAD<sub>i</sub>(τ<sub>i</sub>)·<var>L<sub>i</sub></var>: τ<sub>i</sub> year of default, <var>r<sub>i</sub></var> EIR, EAD<sub>i</sub>(τ<sub>i</sub>) balance at default, <var>L<sub>i</sub></var> realised LGD (panel F) · ECL<sub>i</sub>(<var>t<sub>h</sub></var>) = shadow lifetime ECL at <var>t<sub>h</sub></var>.</div>
+</section>
+
+<!-- C -->
+<section>
+  <h2><span class="n">B</span>Procedure</h2>
+  <ol class="steps">
+    <li><b class="t">Define the test</b><div class="do">Reference dates 31 Dec 2021 … 2025, cut-off 31 Dec 2026, portfolio. Same conventions both sides: default = 90 dpd / UTP; PV at <var>t₀</var> at the loan's EIR; a loss is dated by its default year.</div></li>
+    <li><b class="t">Freeze one cohort per <var>t₀</var></b><div class="do">Every loan on book with stage, EAD, EIR, booked ECL, upside / downside ECL and expected loss per year <var>m₁ … m<sub>L</sub></var>. Never restated.</div></li>
+    <li><b class="t">Two populations</b><div class="do">(a) Stage 2 + 3 at their booked lifetime ECL; (b) whole book, Stage 1 at its shadow lifetime ECL. Booked ECL as is at <var>h</var> = 1.</div></li>
+    <li><b class="t">Realised loss per loan</b><div class="do">First default after <var>t₀</var> (year τ), EAD then, cash discounted to τ → <var>L</var>; loss = (1+<var>r</var>)<sup>−τ</sup>·EAD·<var>L</var>. Cure = cost only; unresolved = cash so far + Stage 3 provision; Stage 3 at <var>t₀</var>: EAD − PV(cash after <var>t₀</var>).</div></li>
+    <li><b class="t">Truncation test, per horizon</b><div class="do">EL(<var>h</var>) = Σ<var>m₁…m<sub>h</sub></var> vs RL(<var>h</var>), <var>h</var> = 1 … <var>H</var>: ratio ρ, gap G, defaults, unresolved share (panel A left).</div></li>
+    <li><b class="t">Roll-forward test</b><div class="do">Lifetime ECL at <var>t₀</var> vs RL(<var>h</var>) + PV of the shadow lifetime ECL held on survivors at <var>t<sub>h</sub></var> (panel A right). Report next to step 5.</div></li>
+    <li><b class="t">Hindsight ECL</b><div class="do">Same engine, same loans, realised macro path. RL − hindsight = the engine's fit; hindsight − booked = what the scenarios missed.</div></li>
+    <li><b class="t">Triangle</b><div class="do">Rows <var>t₀</var>, columns <var>h</var>, diagonals = calendar years. Same sign along rows and columns, on both sides of the stress diagonal = bias.</div></li>
+    <li><b class="t">Grade and escalate</b><div class="do">Green inside the upside–downside band; amber ≤ 25 % outside or unresolved &gt; 25 %; red beyond. Amber → owner explains; red → committee.</div></li>
+    <li><b class="t">Paired t-test</b><div class="do">Per cell: <var>d<sub>i</sub></var> = realised − expected per loan, <var>t</var> = mean(<var>d</var>)/[sd(<var>d</var>)/√<var>n</var>]. Valid with hindsight ECL as expected, indicative with booked (panel E).</div></li>
+    <li><b class="t">Data checks, repeat yearly</b><div class="do">Default definition stable; forbearance, sales and unresolved shares reported per cell. Full triangle every year-end.</div></li>
+  </ol>
+</section>
+
+<!-- D1 -->
+<section>
+  <h2><span class="n">C</span>Stage migrations and write-off</h2>
+  <svg viewBox="0 0 400 204" style="display:block;width:80%;margin:0 auto;height:auto;aspect-ratio:400/204" xmlns="http://www.w3.org/2000/svg" aria-label="stage migration state diagram">
+    <defs>
+      <marker id="a1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#5b6470"/></marker>
+      <marker id="a2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#e34948"/></marker>
+      <marker id="a3" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#1baf7a"/></marker>
+      <marker id="a4" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#9a1f18"/></marker>
+    </defs>
+    <rect x="8" y="16" width="150" height="138" rx="6" fill="#fafbfc" stroke="#cfd4da" stroke-width="1" stroke-dasharray="3 2"/>
+    <text x="83" y="26" text-anchor="middle" font-size="6.4" fill="#5b6470" font-weight="700">PERFORMING — moves here change nothing</text>
+    <rect x="18" y="32" width="130" height="40" rx="5" fill="#fdf0d5" stroke="#eda100" stroke-width="1.6"/>
+    <text x="83" y="49" text-anchor="middle" font-size="9.5" font-weight="700">Stage 2</text>
+    <text x="83" y="63" text-anchor="middle" font-size="6.6" fill="#2b3137">lifetime ECL booked and tested</text>
+    <rect x="18" y="100" width="130" height="40" rx="5" fill="#e3f1e4" stroke="#1baf7a" stroke-width="1.6"/>
+    <text x="83" y="117" text-anchor="middle" font-size="9.5" font-weight="700">Stage 1</text>
+    <text x="83" y="131" text-anchor="middle" font-size="6.6" fill="#2b3137">12-m booked · shadow lifetime tested</text>
+    <path d="M58,100 L58,72" stroke="#5b6470" stroke-width="1.3" marker-end="url(#a1)"/>
+    <text x="53" y="89" font-size="6.4" fill="#5b6470" text-anchor="end">SICR</text>
+    <path d="M108,72 L108,100" stroke="#5b6470" stroke-width="1.3" marker-end="url(#a1)"/>
+    <text x="113" y="89" font-size="6.4" fill="#5b6470">reversal</text>
+    <rect x="190" y="60" width="152" height="56" rx="5" fill="#fae0de" stroke="#e34948" stroke-width="1.6"/>
+    <text x="266" y="78" text-anchor="middle" font-size="9.5" font-weight="700">Stage 3 — default</text>
+    <text x="266" y="92" text-anchor="middle" font-size="6.6" fill="#2b3137">the only loss event, in year τ</text>
+    <text x="266" y="106" text-anchor="middle" font-size="6.6" fill="#2b3137">realised loss = EAD(τ) × L × (1+r)⁻ᵗ</text>
+    <path d="M148,52 C170,52 180,66 190,74" stroke="#e34948" stroke-width="1.5" marker-end="url(#a2)" fill="none"/>
+    <text x="168" y="46" font-size="6.6" fill="#9a1f18" font-weight="700" text-anchor="middle">default</text>
+    <path d="M148,120 C170,120 180,112 190,106" stroke="#e34948" stroke-width="1.5" marker-end="url(#a2)" fill="none"/>
+    <text x="168" y="130" font-size="6.6" fill="#9a1f18" font-weight="700" text-anchor="middle">default</text>
+    <path d="M226,60 C212,22 172,14 148,36" stroke="#1baf7a" stroke-width="1.5" marker-end="url(#a3)" fill="none"/>
+    <text x="196" y="10" font-size="6.6" fill="#1f6f22" font-weight="700" text-anchor="middle">cure: same event, loss = cost; probation in Stage 2</text>
+    <rect x="200" y="130" width="84" height="32" rx="5" fill="#f1f2f4" stroke="#5b6470" stroke-width="1.4"/>
+    <text x="242" y="143" text-anchor="middle" font-size="8.4" font-weight="700">Resolved</text>
+    <text x="242" y="155" text-anchor="middle" font-size="6.4" fill="#2b3137">cash in → L known</text>
+    <rect x="292" y="130" width="88" height="32" rx="5" fill="#f1f2f4" stroke="#5b6470" stroke-width="1.4"/>
+    <text x="336" y="143" text-anchor="middle" font-size="8.4" font-weight="700">Unresolved</text>
+    <text x="336" y="155" text-anchor="middle" font-size="6.4" fill="#2b3137">cash so far + best est.</text>
+    <path d="M242,116 L242,130" stroke="#5b6470" stroke-width="1.3" marker-end="url(#a1)"/>
+    <path d="M336,116 L336,130" stroke="#5b6470" stroke-width="1.3" marker-end="url(#a1)"/>
+    <rect x="200" y="172" width="180" height="28" rx="5" fill="#fff" stroke="#9a1f18" stroke-width="1.2" stroke-dasharray="3 2"/>
+    <text x="290" y="184" text-anchor="middle" font-size="8.4" font-weight="700" fill="#9a1f18">Write-off (any time after τ)</text>
+    <text x="290" y="195" text-anchor="middle" font-size="6.4" fill="#9a1f18">accounting only — ignored by the test</text>
+    <path d="M342,98 C394,106 400,158 381,186" stroke="#9a1f18" stroke-width="1.1" stroke-dasharray="3 2" marker-end="url(#a4)" fill="none"/>
+  </svg>
+  <div class="rule"><b class="h">Moves between Stage 1 and Stage 2 after <var>t₀</var></b>
+    <ul><li>EL(<var>h</var>) and RL(<var>h</var>) do not change: stage and expected loss per year are frozen at <var>t₀</var>; a loan that moves 1→2 or 2→1 and never defaults has RL = 0.</li>
+        <li>They matter in one place only: the roll-forward adds each survivor's <em>shadow</em> lifetime ECL at <var>t<sub>h</sub></var>, so a 2→1 move cannot flatter the test.</li></ul></div>
+  <div class="rule"><b class="h">Cure and re-default</b>
+    <ul><li>Cure = same default event; realised loss = workout cost <var>K</var> only. The ECL already prices the chance of a cure, so the expected side is cure-adjusted too.</li>
+        <li>Re-default inside probation = same event (cash flows continue); after probation = a second default event of the same loan, counted again — the unit of RL is the default event.</li></ul></div>
+  <div class="rule wo"><b class="h">Write-off is not relevant to this test, because</b>
+    <ul><li>(a) it is an accounting entry, not a default — the loss is recognised at τ and dated there;</li>
+        <li>(b) its timing is policy-driven, 1–4 years after default, so it would misdate and understate losses;</li>
+        <li>(c) cash can still arrive after it — only cash and costs enter <var>L</var>, whenever they occur.</li></ul>
+    The write-off date is therefore not used anywhere on this page.</div>
+</section>
+</div>
+
+<!-- ================= ROW 2: matrix ================= -->
+<section>
+  <h2><span class="n">D</span>Every combination: stage at <var>t₀</var> × what happened by <var>t<sub>h</sub></var> → expected loss (EL) and realised loss (RL)</h2>
+  <table class="mx">
+    <thead>
+      <tr>
+        <th class="corner">↓ stage at <var>t₀</var> sets EL · → end state at <var>t<sub>h</sub></var> sets RL</th>
+        <th class="col">Still on book, no default<span class="f">(any 1↔2 moves) — the only column where the two tests differ</span></th>
+        <th class="col">Left without default<span class="f">prepaid · matured</span></th>
+        <th class="col">Sold / securitised</th>
+        <th class="col">Defaulted in year τ ≤ <var>h</var>, resolved<span class="f">collateral sold, cash in — written off or not</span></th>
+        <th class="col">Defaulted in year τ ≤ <var>h</var>, cured</th>
+        <th class="col">Defaulted in year τ ≤ <var>h</var>, unresolved at cut-off</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="rowh"><span class="pill p1">Stage 1</span> at <var>t₀</var><span class="f">EL = <var>m₁+…+m<sub>h</sub></var>, <b>shadow</b> lifetime (whole-book test); booked test at <var>h</var>=1: EL = <var>m₁</var></span></td>
+        <td><span class="el">EL: Σ<var>m</var> as in row</span><span class="rl">RL: 0 (truncation) · (1+r)<sup>−h</sup>·shadow ECL at <var>t<sub>h</sub></var> (roll-forward)</span></td>
+        <td><span class="el">EL: Σ<var>m</var> (prepayment is already priced in <var>m</var>)</span><span class="rl">RL: 0</span></td>
+        <td><span class="el">EL: Σ<var>m</var></span><span class="rl">RL: carrying amount − PV(sale price)</span><span class="at">report share sold</span></td>
+        <td><span class="el">EL: Σ<var>m</var> — the booked 12-m ECL never covered τ ≥ 2</span><span class="rl">RL: (1+r)<sup>−τ</sup>·EAD(τ)·<var>L</var>, <var>L</var> from all cash incl. post-write-off</span></td>
+        <td><span class="el">EL: Σ<var>m</var> (cure chance priced in)</span><span class="rl">RL: (1+r)<sup>−τ</sup>·<var>K</var> ≈ 1 % of EAD</span></td>
+        <td><span class="el">EL: Σ<var>m</var></span><span class="rl">RL: (1+r)<sup>−τ</sup>·EAD(τ)·<var>L̂</var>, <var>L̂</var> = cash so far + Stage 3 provision at cut-off</span><span class="at">flag; amber if &gt; 25 % of RL</span></td>
+      </tr>
+      <tr>
+        <td class="rowh"><span class="pill p2">Stage 2</span> at <var>t₀</var><span class="f">EL = <var>m₁+…+m<sub>h</sub></var>, <b>booked</b> lifetime ECL</span></td>
+        <td><span class="el">EL: Σ<var>m</var></span><span class="rl">RL: 0 (truncation) · (1+r)<sup>−h</sup>·shadow ECL at <var>t<sub>h</sub></var> (roll-forward), even after a 2→1 move</span></td>
+        <td><span class="el">EL: Σ<var>m</var></span><span class="rl">RL: 0</span></td>
+        <td><span class="el">EL: Σ<var>m</var></span><span class="rl">RL: carrying amount − PV(sale price)</span><span class="at">report share sold</span></td>
+        <td><span class="el">EL: Σ<var>m</var> — the case IFRS 9 intends</span><span class="rl">RL: (1+r)<sup>−τ</sup>·EAD(τ)·<var>L</var></span></td>
+        <td><span class="el">EL: Σ<var>m</var></span><span class="rl">RL: (1+r)<sup>−τ</sup>·<var>K</var></span></td>
+        <td><span class="el">EL: Σ<var>m</var></span><span class="rl">RL: (1+r)<sup>−τ</sup>·EAD(τ)·<var>L̂</var></span><span class="at">flag unresolved</span></td>
+      </tr>
+      <tr>
+        <td class="rowh"><span class="pill p3">Stage 3</span> at <var>t₀</var> (already defaulted)<span class="f">EL = EAD × in-default LGD, all in <var>h</var> = 1; columns refer to the <em>open</em> default</span></td>
+        <td class="na">n/a (performing at <var>t<sub>h</sub></var> = cured)</td>
+        <td class="na">n/a</td>
+        <td><span class="el">EL: EAD·LGD<sup>S3</sup></span><span class="rl">RL: EAD(<var>t₀</var>) − PV<sub>t₀</sub>(sale price)</span><span class="at">report NPL sales</span></td>
+        <td><span class="el">EL: EAD·LGD<sup>S3</sup></span><span class="rl">RL: EAD(<var>t₀</var>) − PV<sub>t₀</sub>(all cash after <var>t₀</var>), booked at <var>h</var>=1</span></td>
+        <td><span class="el">EL: EAD·LGD<sup>S3</sup> (cure chance priced in while the cure window is open)</span><span class="rl">RL: <var>K</var> at <var>h</var>=1</span><span class="at">a later re-default is a new event of the cured loan</span></td>
+        <td><span class="el">EL: EAD·LGD<sup>S3</sup></span><span class="rl">RL: EAD(<var>t₀</var>) − PV(cash so far) − PV(best-estimate remaining)</span><span class="at">flag unresolved</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="cover"><b>Both tests read off this matrix.</b> Truncation: EL = <var>m₁…m<sub>h</sub></var>, RL as shown. Roll-forward: EL = the full lifetime Σ<sub>k</sub> <var>m</var>, and in the "still on book" column RL = the survivor's shadow lifetime ECL at <var>t<sub>h</sub></var> discounted to <var>t₀</var>; all other columns identical. <b>All transitions covered?</b> Yes, by construction: every loan is in exactly one row (its stage at <var>t₀</var>) and one column at <var>t<sub>h</sub></var> (six exclusive, exhaustive end states); whatever happened in between only decides the column, so the cells sum to EL(<var>h</var>) and RL(<var>h</var>) exactly once. Conventions: second default after probation = second event; partial prepayment ≠ exit; EIR frozen at <var>t₀</var>; sold while in default = Stage 3 × sold; forbearance without default = still on book.</div>
+</section>
+
+<!-- ================= ROW 3: t-test ================= -->
+<section class="row3">
+  <h2 style="grid-column:1/-1"><span class="n">E</span>The t-test (step 10): how to use it on ECL and how to read it</h2>
+  <div>
+    <div class="formula" style="margin-top:0"><span class="lab">Paired t-test, one per cohort × horizon cell</span><var>d<sub>i</sub></var> = realised loss<sub>i</sub>(<var>h</var>) − expected loss<sub>i</sub>(<var>h</var>) for every loan <var>i</var> of the cohort;&nbsp; <var>t</var> = <var>d̄</var> / [ <var>s<sub>d</sub></var> / √<var>n</var> ], df = <var>n</var> − 1<br><span class="small">H₀: mean difference = 0; one-sided alternative "realised &gt; expected" = under-provision. Σ<var>d<sub>i</sub></var> = G(<var>h</var>): the test is the gap divided by its loan-level standard error. Loans that never default enter with <var>d<sub>i</sub></var> = −expected.</span></div>
+    <ul class="q" style="margin-top:.6mm">
+      <li><b>On the hindsight ECL — valid.</b> With the economy held fixed, loan-level differences are independent; <var>t</var> tests whether the engine is biased for these loans. |<var>t</var>| &gt; 2 ≈ 5 % two-sided; with 15 cells read the pattern, not one cell.</li>
+      <li><b>On the booked ECL — indicative only.</b> All loans share one macro surprise, which the standard error ignores, so |<var>t</var>| is inflated in stress years; adequacy on the booked basis is graded by the band (step 9).</li>
+      <li><b>Not</b> on the 15 cell ratios against 1: the cells overlap in loans and years; the effective sample is one or two.</li>
+    </ul>
+  </div>
+  <div>
+    <table class="tt">
+      <thead><tr><th>t on <b>booked</b> ECL — indicative</th><th>h1</th><th>h2</th><th>h3</th><th>h4</th><th>h5</th><th class="gap"></th><th>t on <b>hindsight</b> ECL — valid</th><th>h1</th><th>h2</th><th>h3</th><th>h4</th><th>h5</th></tr></thead>
+      <tbody>
+        <tr><td>2021 (n = 16,732)</td><td class="hi">+6.7</td><td class="hi">+10.8</td><td class="hi">+12.0</td><td class="hi">+12.4</td><td class="hi">+12.5</td><td class="gap"></td><td>2021</td><td class="hi">+6.1</td><td class="hi">+6.8</td><td class="hi">+7.3</td><td class="hi">+7.5</td><td class="hi">+7.6</td></tr>
+        <tr><td>2022 (n = 15,554)</td><td class="hi">+13.1</td><td class="hi">+13.7</td><td class="hi">+13.8</td><td class="hi">+13.8</td><td class="na">n/a</td><td class="gap"></td><td>2022</td><td class="hi">+9.4</td><td class="hi">+9.5</td><td class="hi">+9.7</td><td class="hi">+9.7</td><td class="na">n/a</td></tr>
+        <tr><td>2023 (n = 14,477)</td><td class="lo">−7.2</td><td class="lo">−12.0</td><td class="lo">−14.8</td><td class="na">n/a</td><td class="na">n/a</td><td class="gap"></td><td>2023</td><td class="ok">+1.7</td><td class="hi">+2.4</td><td class="hi">+2.4</td><td class="na">n/a</td><td class="na">n/a</td></tr>
+        <tr><td>2024 (n = 13,506)</td><td class="lo">−7.5</td><td class="lo">−10.3</td><td class="na">n/a</td><td class="na">n/a</td><td class="na">n/a</td><td class="gap"></td><td>2024</td><td class="ok">+1.2</td><td class="ok">+1.6</td><td class="na">n/a</td><td class="na">n/a</td><td class="na">n/a</td></tr>
+        <tr><td>2025 (n = 12,508)</td><td class="lo">−6.2</td><td class="na">n/a</td><td class="na">n/a</td><td class="na">n/a</td><td class="na">n/a</td><td class="gap"></td><td>2025</td><td class="hi">+3.5</td><td class="na">n/a</td><td class="na">n/a</td><td class="na">n/a</td><td class="na">n/a</td></tr>
+      </tbody>
+    </table>
+    <div class="small" style="margin-top:.6mm">Synthetic book, whole-book shadow basis. <span style="color:#9a1f18;font-weight:700">Red</span> = <var>t</var> &gt; 2 (realised above expected), <span style="color:#1f4e79;font-weight:700">blue</span> = <var>t</var> &lt; −2, green = within noise. <b>Reading.</b> Booked basis flips sign at the 2023 stress — the scenarios were wrong in opposite directions, which says nothing about the engine. Hindsight basis stays +6 to +10 for the 2021–22 cohorts (the engine under-forecast losses even with the right economy — bias confirmed), near zero for 2023–25.</div>
+    
+  </div>
+</section>
+
+<!-- ================= ROW 4: definitions ================= -->
+<section>
+  <dl class="defs" style="border-top:1pt solid var(--rule);padding-top:1.2mm">
+    <div style="break-inside:avoid"><span class="n" style="display:inline-block;background:var(--accent);color:#fff;border-radius:2pt;padding:0 1.5mm;margin-right:1.5mm;font-family:var(--mono);font-size:7pt;line-height:3.8mm">F</span><b style="color:var(--accent);font-size:8pt">Definitions</b></div>
+    <div><dt>Static cohort</dt><dd>every loan on book at a reference date <var>t₀</var> (31 Dec 2021 … 2025), frozen with the ECL it carried; loans leave only by prepayment, maturity, sale or default, none are added.</dd></div>
+    <div><dt>Default, τ, development year <var>h</var></dt><dd>default = 90 days past due or unlikely to pay; year <var>h</var> = calendar year <var>t₀ + h</var>; τ = the <var>h</var> in which a loan defaults; a loss belongs to its default year.</dd></div>
+    <div><dt>Stage 1 / 2 / 3</dt><dd>1 = performing, 12-month ECL booked (= <var>m₁</var>); 2 = significant increase in credit risk, lifetime ECL booked (= Σ<var>m<sub>h</sub></var>); 3 = in default, ECL = EAD × in-default LGD.</dd></div>
+    <div><dt>Shadow lifetime ECL</dt><dd>lifetime ECL computed for a Stage 1 loan with the same engine — used in the test (and for survivors in the roll-forward), never booked.</dd></div>
+    <div><dt>Realised loss, realised LGD <var>L</var></dt><dd>(1+<var>r</var>)<sup>−τ</sup> × EAD(τ) × <var>L</var>, with <var>L</var> = 1 − [Σ<sub>j</sub> <var>R<sub>j</sub></var>(1+<var>r</var>)<sup>−(u<sub>j</sub>−τ)</sup> − <var>K</var>] / EAD(τ): <var>R<sub>j</sub></var> = cash received in year <var>u<sub>j</sub></var>, <var>K</var> = workout cost. Zero for loans that never default.</dd></div>
+    <div><dt>Hindsight ECL</dt><dd>the same ECL engine run again at <var>t₀</var> on the frozen loans with the macro path that actually happened — the forecast the bank would have booked had it known the economy.</dd></div>
+  </dl>
+  <div class="credit" style="margin-top:.3mm">Companion to <code>methodology_ecl_backtest.md</code>, <code>methodology_ecl_backtest.html</code>, <code>ecl_backtest_mortgages.ipynb</code> · Model Risk Management · Nov 2026 · v1.8</div>
+</section>
+
+</div>
+</body>
+</html>
